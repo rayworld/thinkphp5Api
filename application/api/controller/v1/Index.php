@@ -1,7 +1,8 @@
 <?php
+
 namespace app\api\controller\v1;
 
-class Index 
+class Index
 {
     public function index()
     {
