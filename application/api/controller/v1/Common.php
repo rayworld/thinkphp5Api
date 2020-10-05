@@ -2,28 +2,60 @@
 
 namespace app\api\controller\v1;
 
-use think\Request;
 use think\Controller;
+use think\Validate;
 
 class Common extends Controller
 {
     protected $request;
+    protected $params;
+    protected $validater;
+    protected $rules = array(
+        'user' => array(
+            'login' => array(
+                'user_name' => 'require|chsDash|max:20',
+                'user_pwd' => 'require|length:32'
+            ),
+            'index' => array(
+            ),
+        ),
+    );
 
     /**
-     *
+     * 构造函数，验证参数是否合法
+     * PHP 5 用 _initialzer()
      */
     public function __construct()
     {
-        parent::__construct();
-        //$this->check_time($this->request->only(['time']));
-        $this->check_token($this->request->param());
+        parent::__construct(); //执行Controller类的构造函数
+        //$this->check_time($this->request->only(['time']));//时间戳验证
+        //$this->check_token($this->request->param());//Token验证
+        $this->params = $this->validate_params($this->request->except(['time', 'token']));
     }
 
     /**
      * Undocumented function
      *
-     * @param [type] $arr
+     * @param [type] $arr [全部请求参数]
      * @return void
+     */
+    public function validate_params($arr)
+    {
+        $controller_name = substr($this->request->controller(),strpos($this->request->controller(),'.')+1);
+        $action_name=$this->request->action();
+        $rule = $this->rules[$controller_name][$action_name];
+        $this->validater = new validate($rule);
+        if (!$this->validater->check($arr)) {
+            $this->return_msg(404, $this->validater->getError());
+        }
+        return $arr;
+    }
+
+    /**
+     * token验证
+     *
+     * @param [type] $arr [全部请求参数]
+     * @return [json] [token 验证结果]
      */
     public function check_token($arr)
     {
@@ -32,24 +64,22 @@ class Common extends Controller
         }
 
         $client_token = $arr['token'];
-
-        unset($arr['token']);
+        unset($arr['token']); //去掉token参数
         $server_token = '';
-        foreach ($arr as $key => $Value){
+        foreach ($arr as $key => $Value) {
             $server_token .= $Value;
         }
-        $server_token=md5("api_".$server_token."_api");
-        //echo $server_token;
+        $server_token = md5("api_" . $server_token . "_api");
         if ($client_token !== $server_token) {
             $this->return_msg(403, 'token error');
         }
     }
 
     /**
-     * Undocumented function
+     * time 验证
      *
-     * @param [type] $arr
-     * @return void
+     * @param [type] $arr [全部请求参数]
+     * @return [json] [time 验证结果]
      */
     public function check_time($arr)
     {
@@ -63,7 +93,7 @@ class Common extends Controller
     }
 
     /**
-     * Undocumented function
+     * 返回错误信息
      *
      * @param [int] $code
      * @param string $msg
