@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 use think\Controller;
 use think\Validate;
 
+
 class Common extends Controller
 {
     protected $request;
@@ -16,8 +17,11 @@ class Common extends Controller
                 'user_name' => 'require|chsDash|max:20',
                 'user_pwd' => 'require|length:32'
             ),
-            'index' => array(
-            ),
+            'index' => array(),
+
+        ),
+        'captcha' => array(
+            'get_captcha' => array(),
         ),
     );
 
@@ -41,8 +45,8 @@ class Common extends Controller
      */
     public function validate_params($arr)
     {
-        $controller_name = substr($this->request->controller(),strpos($this->request->controller(),'.')+1);
-        $action_name=$this->request->action();
+        $controller_name = substr($this->request->controller(), strpos($this->request->controller(), '.') + 1);
+        $action_name = $this->request->action();
         $rule = $this->rules[$controller_name][$action_name];
         $this->validater = new validate($rule);
         if (!$this->validater->check($arr)) {
@@ -107,5 +111,29 @@ class Common extends Controller
         $return_data['data'] = $data;
         echo json_encode($return_data);
         die;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param [type] $account_name
+     * @return void
+     */
+    public function check_account_type($account_name)
+    {
+        $is_email = filter_var($account_name, FILTER_VALIDATE_EMAIL) ? 1 : 0;
+        $is_mobile = strlen($account_name) == 11 && preg_match('/^1[3|4|5|8][0-9]\d{4,8}$/', $account_name) ? 4 : 2;
+        $flag = $is_mobile + $is_email;
+        switch ($flag) {
+            case 2:
+                $this->return_msg(404, 'not mobile or email');
+                break;
+            case 3:
+                return 'email';
+                break;
+            case 4:
+                return 'mobile';
+                break;
+        }
     }
 }
