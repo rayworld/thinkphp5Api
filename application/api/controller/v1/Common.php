@@ -18,13 +18,36 @@ class Common extends Controller
     protected $rules = array(
         'user' => array(
             'login' => array(
-                'user_name' => 'require|chsDash|max:20',
-                'user_pwd' => 'require|length:32'
+                'user_name' => 'require',
+                'user_pwd' => 'require|length:32',
             ),
             'register' => array(
-                'user_name' => 'require|chsDash|max:20',
+                'user_name' => 'require',
                 'user_pwd' => 'require|length:32',
-                'captcha' => 'require|number|length:6'
+                'captcha' => 'require|number|length:6',
+            ),
+            'upload_header_image' => array(
+                'user_id' => 'require|number',
+                'header_image' => 'image|fileSize:4000000|fileExt:jpg,png,bmp,jpeg',
+            ),
+            'change_password' => array(
+                'account_name' => 'require',
+                'origin_password' => 'require|length:32',
+                'new_password' => 'require|length:32',
+            ),
+            'reset_password' => array(
+                'account_name' => 'require',
+                'captcha' => 'require|number|length:6',
+                'password' => 'require|length:32',
+            ),
+            'bind_mobile_or_email' => array(
+                'account_name' => 'require',
+                'captcha' => 'require|number|length:6',
+                'user_id' => 'require|number',
+            ),
+            'update_nick_name' => array(
+                'account_name' => 'require',
+                'nick_name' => 'require',
             ),
             'index' => array(),
         ),
@@ -46,7 +69,7 @@ class Common extends Controller
         //Token验证
         //$this->check_token($this->request->param());
         //参数过滤
-        $this->params = $this->validate_params($this->request->except(['time', 'token']));
+        $this->params = $this->validate_params($this->request->param(true));
     }
 
     /**
@@ -237,5 +260,17 @@ class Common extends Controller
         //删除session验证码
         session($account_name . '_captcha', null);
         session($account_name . '_last_sand_time', null);
+    }
+
+    public function upload_file($file, $type = '')
+    {
+        $info = $file->move(ROOT_PATH . 'public' . DS . 'static' . DS . 'uploads');
+        dump($info);
+        die;
+        if ($info) {
+            $path = '/upload/' . $info->getFileName();
+        } else {
+            $this->return_msg(400, $info->getError());
+        }
     }
 }

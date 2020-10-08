@@ -13,14 +13,39 @@ class User extends Common
     }
 
     /**
+     * 上传用户图像
+     *
+     * @return 空
+     */
+    public function upload_header_image()
+    {
+        //只允许以post方式请求数据，报错可不管
+        if (request()->isPost()) {
+            //取得参数
+            $data = $this->params;
+            $upload_image_path = $this->upload_file($data['header_image'], 'header_iamge');
+            $res = db('user')
+                ->where('user_id', $data['user_id'])
+                ->setField('header_image', $upload_image_path);
+            if (!$res) {
+                $this->return_msg(200, '上传图像成功', $upload_image_path);
+            } else {
+                $this->return_msg(400, '上传图像失败');
+            }
+        } else {
+            $this->return_msg(400, '数据请求方式不正确！');
+        }
+    }
+
+    /**
      * 用户登录过程
      *
      * @return 用户信息
      */
     public function login()
     {
-        ////只允许以post方式请求数据，报错可不管
-        if (Request::isPost()) {
+        ////只允许以post方式请求数据
+        if (request()->isPost()) {
             //取得参数
             $data = $this->params;
             //取得账户类型
@@ -43,7 +68,8 @@ class User extends Common
             if ($res['password'] != $data['user_pwd']) {
                 $this->return_msg(400, '用户信息不存在');
             } else {
-                Session('user_info', $data);
+                unset($res['password']);
+                Session('user_info', $res);
                 $this->return_msg(200, '用户登录成功', $res);
             }
         } else {
@@ -59,7 +85,7 @@ class User extends Common
     public function register()
     {
         //只允许以post方式请求数据，报错可不管
-        if (Request::isPost()) {
+        if (request()->isPost()) {
             //取得参数
             $data = $this->params;
             //检查验证码是否正确
@@ -88,6 +114,102 @@ class User extends Common
                 $this->return_msg(400, '写入用户注册信息错误');
             } else {
                 $this->return_msg(200, '用户注册成功！');
+            }
+        } else {
+            $this->return_msg(400, '数据请求方式不正确！');
+        }
+    }
+
+    /**
+     * 用户修改密码
+     *
+     * @return 空
+     */
+    public function change_password()
+    {
+        if (request()->isPost()) {
+            $data = $this->params;
+            $account_type = $this->check_account_type($data['account_name']);
+            $this->check_user_exist($data['account_name'], $account_type, 1);
+            $where[$account_type] = $data['account_name'];
+            $origin_pass = db('user')->where($where)->value('password');
+            if ($origin_pass == $data['origin_password']) {
+                $res = db('user')->where($where)->setField('password', $data['new_password']);
+                if ($res !== false) {
+                    $this->return_msg(200, '密码修改成功！');
+                } else {
+                    $this->return_msg(400, '密码修改失败！');
+                }
+            } else {
+                $this->return_msg(400, '原密码不正确');
+            }
+        } else {
+            $this->return_msg(400, '数据请求方式不正确！');
+        }
+    }
+
+    /**
+     * 用户重置密码
+     *
+     * @return void
+     */
+    public function reset_password()
+    {
+        if (request()->isPost()) {
+            $data = $this->params;
+            $this->check_captcha($data['account_name'], $data['captcha']);
+            $account_type = $this->check_account_type($data['account_name']);
+            $this->check_user_exist($data['account_name'], $account_type, 1);
+            $where[$account_type] = $data['account_name'];
+            $res = db('user')->where($where)->setField('password', $data['password']);
+            if ($res !== false) {
+                $this->return_msg(200, '密码修改成功！');
+            } else {
+                $this->return_msg(400, '密码修改失败！');
+            }
+        } else {
+            $this->return_msg(400, '数据请求方式不正确！');
+        }
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @return void
+     */
+    public function bind_mobile_or_email()
+    {
+        if (request()->isPost()) {
+            $data = $this->params;
+            $this->check_captcha($data['account_name'], $data['captcha']);
+            $account_type = $this->check_account_type($data['account_name']);
+            $account_type_desc =
+                $res = db('user')
+                ->where('user_id', $data['user_id'])
+                ->setField($account_type, $data['account_name']);
+            if ($res !== false) {
+                $this->return_msg(200, $account_type_desc . '绑定成功！');
+            } else {
+                $this->return_msg(400, $account_type_desc . '绑定失败！');
+            }
+        } else {
+            $this->return_msg(400, '数据请求方式不正确！');
+        }
+    }
+
+    public function update_nick_name()
+    {
+        if (request()->isPost()) {
+            $data = $this->params;
+            $account_type = $this->check_account_type($data['account_name']);
+            $this->check_user_exist($data['account_name'], $account_type, 1);
+            $res = db('user')
+                ->where($account_type, $data['account_name'])
+                ->setField('nick_name', $data['nick_name']);
+            if ($res !== false) {
+                $this->return_msg(200, '用户昵称修改成功！');
+            } else {
+                $this->return_msg(400, '用户昵称修改失败！');
             }
         } else {
             $this->return_msg(400, '数据请求方式不正确！');
