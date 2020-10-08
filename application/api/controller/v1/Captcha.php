@@ -49,11 +49,11 @@ class Captcha extends Common
 
         //生成指定位数的验证码
         $captcha = $this->make_captcha(6);
-        $md5_captcha = md5('Account' . '*' . md5($captcha));
+        $md5_captcha = md5('account' . '_' . md5($captcha));
         //保存加密后的验证码
         session($account_name . '_captcha', $md5_captcha);
         //保存生成验证码时间
-        session($account_name . '_last_update_time', time());
+        session($account_name . '_last_sand_time', time());
         if ($account_type == 'mobile') {
             //生成手机验证码
             $this->send_captcha_by_mobile($account_name, $captcha);

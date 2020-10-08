@@ -4,7 +4,7 @@ namespace app\api\controller\v1;
 
 use think\Controller;
 use think\Validate;
-use think\Db;
+//use think\Db;
 
 class Common extends Controller
 {
@@ -21,8 +21,12 @@ class Common extends Controller
                 'user_name' => 'require|chsDash|max:20',
                 'user_pwd' => 'require|length:32'
             ),
+            'register' => array(
+                'user_name' => 'require|chsDash|max:20',
+                'user_pwd' => 'require|length:32',
+                'captcha' => 'require|number|length:6'
+            ),
             'index' => array(),
-
         ),
         'captcha' => array(
             'get_captcha' => array(),
@@ -80,7 +84,7 @@ class Common extends Controller
     {
         //token是否存在
         if (!isset($arr['token']) || empty($arr['token'])) {
-            $this->return_msg(402, 'token is empty');
+            $this->return_msg(402, 'token不能为空！');
         }
         //请求发过来的token
         $client_token = $arr['token'];
@@ -180,8 +184,8 @@ class Common extends Controller
     {
         $type_value = $account_type == 'mobile' ? 2 : 4;
         $flag = $is_exist + $type_value;
-        $mobile_res = db('account')->where('mobile', $account_name)->find();
-        $email_res = db('account')->where('email', $account_name)->find();
+        $mobile_res = db('user')->where('mobile', $account_name)->find();
+        $email_res = db('user')->where('email', $account_name)->find();
         switch ($flag) {
             case 2:
                 if ($mobile_res) {
@@ -205,5 +209,33 @@ class Common extends Controller
                 }
                 break;
         }
+    }
+
+    /**
+     * 验证验证吗是否正确
+     *
+     * @param [string] $account_name【账户信息】
+     * @param [number] $captcha【要验证验证吗】
+     * @return void
+     */
+    public function check_captcha($account_name, $captcha)
+    {
+        //从Seesion取得该账号的验证码。
+        $session_captcha = session($account_name . '_captcha');
+        //如果Seesion上次发送时间间隔效益60秒，报错。
+        if (time() - session($account_name . '_last_sand_time') > 6000000) {
+            //打印错误信息
+            $this->return_msg(400,  '验证码已经过期');
+        }
+        //session验证码不相等，报错。
+        if ($session_captcha != md5('account' . '_' . md5($captcha))) {
+            $data['dfs'] = $session_captcha;
+            $data['ddd'] = md5('account' . '_' . md5($captcha));
+
+            $this->return_msg(400, '验证码错误!', $data);
+        }
+        //删除session验证码
+        session($account_name . '_captcha', null);
+        session($account_name . '_last_sand_time', null);
     }
 }
