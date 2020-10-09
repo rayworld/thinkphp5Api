@@ -4,7 +4,7 @@ namespace app\api\controller\v1;
 
 use think\Controller;
 use think\Validate;
-//use think\Db;
+use think\Image;
 
 class Common extends Controller
 {
@@ -18,17 +18,17 @@ class Common extends Controller
     protected $rules = array(
         'user' => array(
             'login' => array(
-                'user_name' => 'require',
+                'account_name' => 'require',
                 'user_pwd' => 'require|length:32',
             ),
             'register' => array(
-                'user_name' => 'require',
+                'account_name' => 'require',
                 'user_pwd' => 'require|length:32',
                 'captcha' => 'require|number|length:6',
             ),
             'upload_header_image' => array(
                 'user_id' => 'require|number',
-                'header_image' => 'image|fileSize:4000000|fileExt:jpg,png,bmp,jpeg',
+                'header_image' => 'require|image|fileSize:4000000|fileExt:jpg,png,bmp,jpeg',
             ),
             'change_password' => array(
                 'account_name' => 'require',
@@ -278,16 +278,38 @@ class Common extends Controller
         session($account_name . '_last_sand_time', null);
     }
 
+    /**
+     * 上传文件
+     *
+     * @param [type] $file
+     * @param string $type
+     * @return void
+     */
     public function upload_file($file, $type = '')
     {
-        $info = $file->move(ROOT_PATH . 'public' . DS . 'static' . DS . 'uploads');
-        dump($info);
-        die;
+        //$root = new Env();
+        $info = $file->move(env('root_path') . 'public/static/uploads');
         if ($info) {
-            $path = '/upload/' . $info->getFileName();
+            $path = 'static/uploads/' . date('Ymd') . '/' . $info->getFileName();
         } else {
             $this->return_msg(400, $info->getError());
         }
+        if (!empty($type)) {
+            $this->cut_image($path);
+        }
+        return $path;
+    }
+
+    /**
+     * 切割图像
+     *
+     * @param string $path [文件路径]
+     * @return void 空
+     */
+    public function cut_image($path)
+    {
+        $image = Image::open(env('root_path') . 'public/' . $path);
+        $image->thumb(200, 200, Image::THUMB_CENTER)->save(env('root_path') . 'public/' . $path);
     }
 
     /**

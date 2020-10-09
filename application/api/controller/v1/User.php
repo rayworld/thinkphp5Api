@@ -15,19 +15,18 @@ class User extends Common
     /**
      * 上传用户图像
      *
-     * @return 空
+     * @return void 空
      */
     public function upload_header_image()
     {
         //只允许以post方式请求数据，报错可不管
         $this->validate_request('post');
-        //取得参数
         $data = $this->params;
         $upload_image_path = $this->upload_file($data['header_image'], 'header_iamge');
         $res = db('user')
             ->where('user_id', $data['user_id'])
             ->setField('header_image', $upload_image_path);
-        if (!$res) {
+        if ($res) {
             $this->return_msg(200, '上传图像成功', $upload_image_path);
         } else {
             $this->return_msg(400, '上传图像失败');
