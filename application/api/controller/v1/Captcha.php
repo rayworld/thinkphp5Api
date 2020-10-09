@@ -15,6 +15,7 @@ class Captcha extends Common
      */
     public function get_captcha()
     {
+        $this->validate_request('get');
         //取得账户名称
         $account_name = $this->params['account_name'];
         //信息是否存在标志
@@ -67,8 +68,8 @@ class Captcha extends Common
     /**
      * 生成指定位数的验证码
      *
-     * @param [int] $num 生成验证码位数
-     * @return [string] 生成的验证码
+     * @param int $num 生成验证码位数
+     * @return string 生成的验证码
      */
     public function make_captcha($num)
     {

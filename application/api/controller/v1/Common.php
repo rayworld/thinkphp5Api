@@ -54,6 +54,14 @@ class Common extends Controller
         'captcha' => array(
             'get_captcha' => array(),
         ),
+        'blog' => array(
+            'get_list' => array(
+                'user_id' => 'require',
+            ),
+            'get_article_by_id' => array(
+                'article_id' => 'require|number',
+            ),
+        ),
     );
 
     /**
@@ -75,8 +83,8 @@ class Common extends Controller
     /**
      * 参数过滤
      *
-     * @param [array] $arr [全部请求参数]
-     * @return 过滤后的参数
+     * @param array $arr [全部请求参数]
+     * @return array 过滤后的参数
      */
     public function validate_params($arr)
     {
@@ -271,6 +279,38 @@ class Common extends Controller
             $path = '/upload/' . $info->getFileName();
         } else {
             $this->return_msg(400, $info->getError());
+        }
+    }
+
+    /**
+     * 检查Api数据请求方式
+     *
+     * @param [string] $methor [请求方式]
+     * @return 空
+     */
+    public function validate_request($methor)
+    {
+        switch ($methor) {
+            case 'get':
+                if (!request()->isGet()) {
+                    $this->return_msg(400, 'Api数据请求方式错误！');
+                }
+                break;
+            case 'post':
+                if (!request()->isPost()) {
+                    $this->return_msg(400, 'Api数据请求方式错误！');
+                }
+                break;
+            case 'put':
+                if (!request()->isPut()) {
+                    $this->return_msg(400, 'Api数据请求方式错误！');
+                }
+                break;
+            case 'delete':
+                if (!request()->isDelete()) {
+                    $this->return_msg(400, 'Api数据请求方式错误！');
+                }
+                break;
         }
     }
 }
