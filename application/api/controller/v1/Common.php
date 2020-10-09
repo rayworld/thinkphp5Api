@@ -58,10 +58,18 @@ class Common extends Controller
             'get_list' => array(
                 'user_id' => 'require',
             ),
-            'get_article_by_id' => array(
+            'detail' => array(
                 'article_id' => 'require|number',
             ),
-        ),
+            'insert' => array(),
+            'update' => array(
+                'article_id' => 'require|number',
+                'comment' => 'require|chsDash',
+            ),
+            'delete' => array(
+                'article_id' => 'require|number',
+            ),
+        )
     );
 
     /**
