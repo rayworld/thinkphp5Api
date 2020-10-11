@@ -11,10 +11,11 @@ class Captcha extends Common
     /**
      * 取得验证码
      *
-     * @return void
+     * @return void [空]
      */
     public function get_captcha()
     {
+        //只允许以post方式请求数据
         $this->validate_request('get');
         //取得账户名称
         $account_name = $this->params['account_name'];
@@ -28,10 +29,10 @@ class Captcha extends Common
     /**
      * Undocumented function
      *
-     * @param [type] $account_name
-     * @param [type] $account_type
-     * @param [type] $is_exist
-     * @return void
+     * @param string $account_name [账户信息]
+     * @param string $account_type [账户类型]
+     * @param bool $is_exist [是否存在]
+     * @return void [空]
      */
     public function get_captcha_by_account_type($account_name, $account_type, $is_exist)
     {
@@ -44,7 +45,7 @@ class Captcha extends Common
             //判断时间间隔小于30秒
             if (time() - session($account_name . '_last_sand_time') < 30) {
                 //打印错误信息
-                $this->return_msg(400, $account_type_desc . '验证码请求时间间隔小鱼30秒');
+                $this->return_msg(400, $account_type_desc . '验证码请求时间间隔小于30秒');
             }
         }
 
@@ -68,8 +69,8 @@ class Captcha extends Common
     /**
      * 生成指定位数的验证码
      *
-     * @param int $num 生成验证码位数
-     * @return string 生成的验证码
+     * @param int $num [生成验证码位数]
+     * @return string [生成的验证码]
      */
     public function make_captcha($num)
     {
@@ -81,9 +82,9 @@ class Captcha extends Common
     /**
      * 生成手机验证码
      *
-     * @param [string] $account_name 账户名称
-     * @param [string] $captcha 验证码
-     * @return void
+     * @param string $account_name [账户名称]
+     * @param string $captcha [验证码]
+     * @return void [空]
      */
     public function send_captcha_by_mobile($account_name, $captcha)
     {
@@ -93,9 +94,9 @@ class Captcha extends Common
     /**
      * 生成邮箱验证码
      *
-     * @param [string] $account_name 账户名称
-     * @param [string] $captcha 验证码
-     * @return void
+     * @param string $account_name [账户名称]
+     * @param string $captcha [验证码]
+     * @return void [空]
      */
     public function send_captcha_by_email($account_name, $captcha)
     {

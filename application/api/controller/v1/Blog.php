@@ -51,7 +51,7 @@ class Blog extends common
     /**
      * 得到一条博客详情
      *
-     * @return void [空]
+     * @return void [博客详细信息]
      */
     public function detail()
     {

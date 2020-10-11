@@ -92,7 +92,7 @@ class Common extends Controller
      * 参数过滤
      *
      * @param array $arr [全部请求参数]
-     * @return array 过滤后的参数
+     * @return array [过滤后的参数]
      */
     public function validate_params($arr)
     {
@@ -104,7 +104,7 @@ class Common extends Controller
         $rule = $this->rules[$controller_name][$action_name];
         //实力话验证器
         $this->validater = new validate($rule);
-        //验证
+        //验证参数规则
         if (!$this->validater->check($arr)) {
             //输出错误信息
             $this->return_msg(404, $this->validater->getError());
@@ -116,8 +116,8 @@ class Common extends Controller
     /**
      * token验证
      *
-     * @param [array] $arr [全部请求参数]
-     * @return [json] [token 验证结果]
+     * @param array $arr [全部请求参数]
+     * @return void [token 验证结果]
      */
     public function check_token($arr)
     {
@@ -147,8 +147,8 @@ class Common extends Controller
     /**
      * 时间戳验证
      *
-     * @param [array] $arr [全部请求参数]
-     * @return [json] [时间戳验证结果]
+     * @param array $arr [全部请求参数]
+     * @return void [时间戳验证结果]
      */
     public function check_time($arr)
     {
@@ -165,10 +165,10 @@ class Common extends Controller
     /**
      * 返回错误信息，终止程序继续执行
      *
-     * @param [int] $code 【错误代码】
-     * @param 【string】 $msg 【错误信息】
-     * @param 【array】 $data 【返回数据】
-     * @return 空
+     * @param int $code 【错误代码】
+     * @param string $msg 【错误信息】
+     * @param array $data 【返回数据】
+     * @return void 空
      */
     public function return_msg($code, $msg = '', $data = [])
     {
@@ -187,8 +187,8 @@ class Common extends Controller
     /**
      * 取得注册账户类型
      *
-     * @param [string] $account_name 注册账户信息
-     * @return 【string】【注册账户类型email或者mobile】
+     * @param string $account_name [注册账户信息]
+     * @return string [注册账户类型email或者mobile]
      */
     public function check_account_type($account_name)
     {
@@ -196,6 +196,7 @@ class Common extends Controller
         $is_email = filter_var($account_name, FILTER_VALIDATE_EMAIL) ? 1 : 0;
         //验证是不是手机
         $is_mobile = strlen($account_name) == 11 && preg_match('/^1[3|4|5|8][0-9]\d{4,8}$/', $account_name) ? 4 : 2;
+        //检查email标志和手机号标志
         $flag = $is_mobile + $is_email;
         switch ($flag) {
             case 2:
@@ -214,10 +215,10 @@ class Common extends Controller
     /**
      * 检查账户信息是否正确
      *
-     * @param [string] $account_name 账户信息
-     * @param [string] $account_type 账户信息类型：mobile，email
-     * @param [bool] $is_exist 账户信息是否应该存在
-     * @return void
+     * @param string $account_name [账户信息]
+     * @param string $account_type [账户信息类型：mobile，email]
+     * @param bool $is_exist [账户信息是否应该存在]
+     * @return void [空]
      */
     public function check_user_exist($account_name, $account_type, $is_exist)
     {
@@ -253,9 +254,9 @@ class Common extends Controller
     /**
      * 验证验证吗是否正确
      *
-     * @param [string] $account_name【账户信息】
-     * @param [number] $captcha【要验证验证吗】
-     * @return void
+     * @param string $account_name[账户信息]
+     * @param int $captcha[要验证验证吗]
+     * @return void [空]
      */
     public function check_captcha($account_name, $captcha)
     {
@@ -281,7 +282,7 @@ class Common extends Controller
     /**
      * 上传文件
      *
-     * @param [type] $file
+     * @param file $file
      * @param string $type
      * @return void
      */
@@ -309,18 +310,19 @@ class Common extends Controller
     public function cut_image($path)
     {
         $image = Image::open(env('root_path') . 'public/' . $path);
-        $image->thumb(200, 200, Image::THUMB_CENTER)->save(env('root_path') . 'public/' . $path);
+        $image->thumb(200, 200, Image::THUMB_CENTER)
+            ->save(env('root_path') . 'public/' . $path);
     }
 
     /**
      * 检查Api数据请求方式
      *
-     * @param [string] $methor [请求方式]
-     * @return 空
+     * @param string $method [请求方式]
+     * @return void 空
      */
-    public function validate_request($methor)
+    public function validate_request($method)
     {
-        switch ($methor) {
+        switch ($method) {
             case 'get':
                 if (!request()->isGet()) {
                     $this->return_msg(400, 'Api数据请求方式错误！');
