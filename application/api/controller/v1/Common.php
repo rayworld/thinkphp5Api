@@ -96,12 +96,38 @@ class Common extends Controller
      */
     public function validate_params($arr)
     {
+        ///V1版
         //取得控制器名，去掉前面的版本号
-        $controller_name = substr($this->request->controller(), strpos($this->request->controller(), '.') + 1);
+        //$controller_name = substr($this->request->controller(), strpos($this->request->controller(), '.') + 1);
         //取得操作器名
-        $action_name = $this->request->action();
+        //$action_name = $this->request->action();
         //取得验证规则
-        $rule = $this->rules[$controller_name][$action_name];
+        //$rule = $this->rules[$controller_name][$action_name];
+
+        //V2版
+        //从api版本和控制器名称联合字符中分割出api版本和控制器名称
+        $api_version_and_controller = $this->request->controller();
+        //取得小数点的位置
+        $dot_pos = strpos($api_version_and_controller, '.');
+        //取得请求的api版本号参数
+        $shere['api_version']  = substr($api_version_and_controller, 0, $dot_pos);
+        //取得控制器名
+        $where['controller_name'] = substr($api_version_and_controller, $dot_pos + 1);
+        //取得操作器名
+        $where['action_name'] = $this->request->action();
+        //结果显示范围
+        $field_list = 'param_name,rule_value';
+        //查询数据库设置
+        $res = db('module_rule')
+            ->where($where)
+            ->field($field_list)
+            ->select();
+
+        //遍历结果，将结果还原成数组
+        $rule = array();
+        foreach ($res as $key => $Value) {
+            $rule = array_merge($rule, array($Value['param_name'] => $Value['rule_value']));
+        }
         //实力话验证器
         $this->validater = new validate($rule);
         //验证参数规则
